@@ -1,19 +1,24 @@
 <?php
 
-class Router {
+class Router
+{
     private static $list = [];
 
-    public static function addRoutes($route) {
+    public static function addRoutes($route)
+    {
         self::$list[] = [
             $route::$BASE => $route::getRouteList()
         ];
     }
 
-    public static function enable() {
+    public static function enable()
+    {
         $uri = $_GET['q'];
         $params = explode("/", $uri);
-        $nameEndpoint = array_shift($params);
+        array_pop($params);
+        $nameEndpoint = implode('/', $params);
 
+        $notFound = true;
         foreach (self::$list as $names) {
 
             if (key($names) === $nameEndpoint) {
@@ -21,11 +26,26 @@ class Router {
                 foreach ($names[$nameEndpoint] as $routeKey => $route) {
 
                     if ($route === $uri) {
-                        $tt = '\\' . $nameEndpoint . '\\' . 'Routes';
+                        try {
+                            $tt = '\\' . str_replace('/', '\\', $nameEndpoint) . '\\' . 'Routes';
+                            $tt::execute($routeKey);
 
-                        $tt::execute($routeKey);
+                            $notFound = false;
+                        } catch (Exception $e) {
+                            $e->getMessage();
+                        }
                     }
                 }
+            }
+        }
+
+        if ($notFound) {
+            try {
+                throw new Exception('Not found');
+            } catch (Exception $e) {
+                header_remove();
+                http_response_code(404);
+                echo $e->getMessage();
             }
         }
     }
