@@ -17,9 +17,10 @@ function findDirectories($dir) {
 
 function writeRoutes($dir) {
     global $routes;
+    $routes = array();
     findDirectories($dir);
 
-    $fp = fopen('autoLoad.json', 'w');
+    $fp = fopen('autoLoad.json', 'w+');
     fwrite($fp, json_encode($routes));
     fclose($fp);
 }

@@ -1,8 +1,10 @@
 <?php
+require_once __DIR__ . '/writeRoutes.php';
+
 
 $routes = json_decode(file_get_contents('autoLoad.json'), true);
 
-spl_autoload_register(function($class) {
+function findAndLoadClass($class) {
     global $routes;
 
     $disassembled = explode('\\', $class);
@@ -16,4 +18,14 @@ spl_autoload_register(function($class) {
             require_once $classRoute;
         }
     }
-});
+}
+
+function rewritePackageRouteAndReFind($class) {
+    writeRoutes(__DIR__ . "/rental");
+
+    findAndLoadClass($class);
+}
+
+spl_autoload_register('findAndLoadClass');
+spl_autoload_register('rewritePackageRouteAndReFind');
+
